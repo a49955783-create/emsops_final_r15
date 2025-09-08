@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>تحديث مركز العمليات للصحة</title>
+
+  <!-- خط عربي جميل (اختياري) -->
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <!-- أنماط -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Tesseract OCR -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
+</head>
+<body>
+
+  <!-- انترو إسعاف -->
+  <div id="intro">
+    <div class="beacons">
+      <span class="beacon blue"></span>
+      <span class="beacon red"></span>
+    </div>
+    <div class="intro-logo">
+      <img src="logo-left.png" alt="EMS" />
+    </div>
+    <div class="intro-title"><b>EMS</b> مستشفى ريسبكت</div>
+  </div>
+
+  <!-- توست “تم النسخ” -->
+  <div id="copyToast">تم النسخ</div>
+
+  <!-- هيدر ثابت -->
+  <header class="topbar">
+    <img class="badge left" src="logo-left.png" alt="EMS" />
+    <h1>تحديث مركز العمليات للصحة</h1>
+    <img class="badge right" src="logo-right.png" alt="EMS" />
+  </header>
+
+  <!-- أكشنات علوية ثابتة تحت الهيدر -->
+  <div class="sticky-actions">
+    <div class="actions">
+      <button id="clearBtn" class="btn danger">وضع تفريغ/ناتج</button>
+      <label class="btn violet" for="imgInput">رفع/لصق صورة</label>
+      <input id="imgInput" type="file" accept="image/*" hidden />
+    </div>
+
+    <!-- وضع الإدخال -->
+    <div class="mode">
+      <label><input type="radio" name="mergeMode" value="replace" checked /> استبدال</label>
+      <label><input type="radio" name="mergeMode" value="merge" /> دمج</label>
+    </div>
+  </div>
+
+  <main class="container">
+    <!-- صندوق النتيجة -->
+    <section class="card">
+      <div class="card-head">
+        <div class="title">النتيجة النهائية</div>
+        <button id="copyBtn" class="btn slim">نسخ النتيجة</button>
+      </div>
+      <textarea id="resultBox" class="result" rows="10" spellcheck="false"></textarea>
+      <div class="hint small">المستلم يُحتسب ضمن العدد ولا يُعرض ضمن قائمة الميدان.</div>
+    </section>
+
+    <!-- المستلم/النائب -->
+    <section class="card">
+      <div class="row two">
+        <div>
+          <div class="label">المستلم — <span class="muted">الاسم</span></div>
+          <input id="receiverName" class="input" placeholder="الاسم" />
+          <div class="label">— <span class="muted">الكود</span></div>
+          <input id="receiverCode" class="input" placeholder="الكود" />
+          <div id="receiverErr" class="err">يجب عليك كتابة الاسم مع كود</div>
+        </div>
+
+        <div>
+          <div class="label">النائب — <span class="muted">الاسم</span></div>
+          <input id="deputyName" class="input" placeholder="الاسم" />
+          <div class="label">— <span class="muted">الكود</span></div>
+          <input id="deputyCode" class="input" placeholder="الكود" />
+          <div id="deputyErr" class="err">يجب عليك كتابة الاسم مع كود</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- منطقة السحب/اللصق -->
+    <section class="card">
+      <div id="dropArea" class="drop">
+        اسحب وأفلت صورة هنا، أو الصقها بـ <b>Ctrl+V</b>
+      </div>
+      <div class="hint small">يفضل رفع/لصق صورة عالية الجودة. أحيانًا ستحتاج لتعديل النتائج يدويًا قبل الإرسال.</div>
+    </section>
+
+    <!-- جدول/قائمة العناصر -->
+    <section class="card">
+      <div class="card-head">
+        <div class="title">القائمة (ضبط/الاسم//الكود//الحالة//الموقع):</div>
+        <button id="addRowBtn" class="btn violet">إضافة سطر جديد</button>
+      </div>
+
+      <div id="rows"></div>
+    </section>
+  </main>
+
+  <!-- الدروار للجوال (إضافة/تحرير سطر) -->
+  <div id="drawerBackdrop"></div>
+  <aside id="drawer">
+    <div class="drawer-head">
+      <div class="drawer-title">إضافة/تحرير سطر</div>
+      <button id="drawerClose" class="btn icon">&times;</button>
+    </div>
+
+    <div class="drawer-body">
+      <label class="drawer-label">الاسم</label>
+      <input id="dName" class="input" placeholder="اسم ثلاثي"/>
+
+      <label class="drawer-label">الكود</label>
+      <input id="dCode" class="input" placeholder="DA5 مثلاً"/>
+
+      <label class="drawer-label">الحالة</label>
+      <select id="dState" class="select">
+        <option>في الميدان</option>
+        <option>مشغول</option>
+        <option>مشغول - تدريب</option>
+        <option>مشغول - اختبار</option>
+        <option>خارج الخدمة</option>
+      </select>
+
+      <label class="drawer-label">الموقع</label>
+      <select id="dLoc" class="select">
+        <option>— لا شيء —</option>
+        <option>الغرب</option><option>الشرق</option><option>الشمال</option>
+        <option>الوسط</option><option>الجنوب</option><option>ساندي</option>
+        <option>بليتو</option>
+      </select>
+    </div>
+
+    <div class="drawer-foot">
+      <button id="drawerSave" class="btn violet block">تم</button>
+    </div>
+  </aside>
+
+  <!-- سكربت -->
+  <script src="app.js"></script>
+</body>
+</html>
