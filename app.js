@@ -250,7 +250,7 @@ dropArea.addEventListener('drop', e=>{
 
 /* ========== OCR ========== */
 async function runOCR(file){
-  dropArea.textContent = '... الرجاء الأنتظار ...';
+  dropArea.textContent = '... جاري استخراج النص ...';
   const mode = document.querySelector('input[name="mergeMode"]:checked')?.value || 'replace';
 
   try{
